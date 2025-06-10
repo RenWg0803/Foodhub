@@ -27,7 +27,13 @@ interface Restaurant {
   slug: string;
 }
 
-export default function MenuPage({ params }: { params: { slug: string } }) {
+interface PageProps {
+  params: {
+    slug: string;
+  };
+}
+
+export default function Page({ params }: PageProps) {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,6 +84,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
   const discountMenusCount = menus.filter(menu => menu.is_discount_active).length;
 
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <style jsx>{`
         @keyframes fadeInUp {
