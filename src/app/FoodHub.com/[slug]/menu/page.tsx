@@ -34,6 +34,7 @@ interface PageProps {
 }
 
 export default function Page({ params }: PageProps) {
+  const { slug } = params;
   const [menus, setMenus] = useState<Menu[]>([]);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
