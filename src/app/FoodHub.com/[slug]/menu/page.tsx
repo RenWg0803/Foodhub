@@ -28,25 +28,36 @@ interface Restaurant {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default function Page({ params }: PageProps) {
-  const { slug } = params;
+  const [slug, setSlug] = useState<string>("");
   const [menus, setMenus] = useState<Menu[]>([]);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'discount'>('all');
   const router = useRouter();
 
+  // Resolve params promise
+  useEffect(() => {
+    const resolveParams = async () => {
+      const resolvedParams = await params;
+      setSlug(resolvedParams.slug);
+    };
+    resolveParams();
+  }, [params]);
+
   useEffect(() => {
     const fetchRestaurant = async () => {
+      if (!slug) return;
+      
       const { data, error } = await supabase
         .from("restaurants")
         .select("id, name, slug")
-        .eq("slug", params.slug)
+        .eq("slug", slug)
         .single();
 
       if (!error && data) {
@@ -55,7 +66,7 @@ export default function Page({ params }: PageProps) {
     };
 
     fetchRestaurant();
-  }, [params.slug]);
+  }, [slug]);
 
   useEffect(() => {
     const fetchMenus = async () => {
@@ -84,8 +95,16 @@ export default function Page({ params }: PageProps) {
 
   const discountMenusCount = menus.filter(menu => menu.is_discount_active).length;
 
+  // Don't render anything until slug is resolved
+  if (!slug) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
-    
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <style jsx>{`
         @keyframes fadeInUp {
@@ -175,7 +194,7 @@ export default function Page({ params }: PageProps) {
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">Restaurant Menu</h1>
                 <p className="text-sm text-gray-600 capitalize">
-                  {restaurant?.name || params.slug}
+                  {restaurant?.name || slug}
                 </p>
               </div>
             </div>
